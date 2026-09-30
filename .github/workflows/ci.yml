@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  functions:
+    name: Functions (typecheck + unit tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: functions
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+
+  rules:
+    name: Security rules (Firestore emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm install --no-audit --no-fund
+        working-directory: functions
+      - run: npx --yes firebase-tools@14 emulators:exec --only firestore --project demo-tsuzuri "npm --prefix functions run test:rules"
+
+  flutter:
+    name: Flutter (analyze + test)
+    runs-on: ubuntu-latest
+    env:
+      HARNESS_TOKEN: ${{ secrets.HARNESS_TOKEN }}
+    steps:
+      # The app depends on ../../packages/app_core from the private app-factory-harness
+      # workspace. Add a read-only token for that repository as the HARNESS_TOKEN secret.
+      - name: Check workspace access
+        id: access
+        run: |
+          if [ -z "$HARNESS_TOKEN" ]; then
+            echo "::warning::HARNESS_TOKEN is not set; Flutter checks were skipped (not passed)."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.access.outputs.ok == 'true'
+        with:
+          repository: koseirving/app-factory-harness
+          token: ${{ secrets.HARNESS_TOKEN }}
+          path: workspace
+      - uses: actions/checkout@v4
+        if: steps.access.outputs.ok == 'true'
+        with:
+          path: workspace/services/tsuzuri
+      - uses: subosito/flutter-action@v2
+        if: steps.access.outputs.ok == 'true'
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+      - name: pub get
+        if: steps.access.outputs.ok == 'true'
+        working-directory: workspace/services/tsuzuri
+        run: flutter pub get
+      - name: analyze
+        if: steps.access.outputs.ok == 'true'
+        working-directory: workspace/services/tsuzuri
+        run: flutter analyze
+      - name: test
+        if: steps.access.outputs.ok == 'true'
+        working-directory: workspace/services/tsuzuri
+        run: flutter test --reporter expanded

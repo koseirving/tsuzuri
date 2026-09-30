@@ -16,6 +16,8 @@ lib/
   src/data/seed.dart        架空の書き手と日記
   src/ui/                   はじめに・読む・書く・ふたり・写真の同時公開・安全メニュー・設定
 test/                       ルール・デモ実装・画面遷移のテスト
+functions/                  Cloud Functions（TypeScript）。サーバー側の上限・一致・写真同意・ブロックの検証
+firestore.rules など          セキュリティルールとインデックス（クライアントは直接書き込まない）
 prototype/web/index.html    触れる試作（単体の HTML。ブラウザで開くだけで動く）
 ```
 
@@ -37,3 +39,17 @@ python3 ../../scripts/flutter.py run -d chrome                       # Web で�
 
 **2026-09-30 時点で、analyze と test はまだ一度も実行していません**（作成環境に Flutter を入れられなかったため）。
 コードは静的レビューのみ済み。最初の実行で出た指摘は、バックログのタスクで直してください。
+
+## サーバー（functions/）
+
+```sh
+cd functions
+npm install
+npm test            # ロジックのテスト（Node 22.18 以上。TypeScript をそのまま実行）
+npm run typecheck   # tsc
+npx firebase-tools emulators:exec --only firestore --project demo-tsuzuri "npm --prefix functions run test:rules"
+```
+
+Firebase プロジェクトの作成とデプロイは、まだしていません（支出とアカウント作成の承認が必要です）。
+CI の Flutter ジョブには、app-factory-harness を読めるトークンを `HARNESS_TOKEN` シークレットとして登録してください。
+登録がないあいだ、Flutter ジョブは「スキップ」と表示されます。合格ではありません。

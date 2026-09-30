@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Photos are never readable directly. After both people consent, the
+// revealedPhotoUrl function issues a 5-minute signed URL.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /photos/{uid}/profile.jpg {
+      allow read: if false;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType == 'image/jpeg';
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+    match /{all=**} { allow read, write: if false; }
+  }
+}

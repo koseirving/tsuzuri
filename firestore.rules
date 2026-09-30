@@ -1,0 +1,81 @@
+rules_version = '2';
+
+// Clients never write directly: every write goes through Cloud Functions,
+// which enforce limits, mutual matching, photo consent and blocking.
+// Reads are limited to what the person was introduced to, received, or is
+// connected with. Keep in sync with functions/src/core/model.ts.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function blockedBetween(a, b) {
+      return exists(/databases/$(database)/documents/blocks/$(a)/targets/$(b)) || exists(/databases/$(database)/documents/blocks/$(b)/targets/$(a));
+    }
+    function pairId(a, b) { return a < b ? a + '_' + b : b + '_' + a; }
+    function connectionExists(a, b) { return exists(/databases/$(database)/documents/connections/$(pairId(a, b))); }
+    function activeConnection(a, b) {
+      return connectionExists(a, b) && get(/databases/$(database)/documents/connections/$(pairId(a, b))).data.status == 'active';
+    }
+    // Granted by the daily introductions (2 days) and by receiving a letter (14 days).
+    function hasAccess(viewer, author) {
+      return exists(/databases/$(database)/documents/access/$(viewer + '_' + author))
+        && get(/databases/$(database)/documents/access/$(viewer + '_' + author)).data.until > request.time;
+    }
+    function mayRead(author) {
+      return author == me()
+        || (!blockedBetween(me(), author) && (hasAccess(me(), author) || connectionExists(me(), author)));
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && me() == uid;
+      allow write: if false;
+    }
+
+    match /profiles/{uid} {
+      allow read: if signedIn() && mayRead(uid);
+      allow write: if false;
+    }
+
+    match /diaries/{id} {
+      allow get, list: if signedIn() && (
+        resource.data.authorId == me()
+        || (resource.data.scope == 'intro' && !blockedBetween(me(), resource.data.authorId)
+            && (hasAccess(me(), resource.data.authorId) || activeConnection(me(), resource.data.authorId)))
+        || (resource.data.scope == 'connections' && !blockedBetween(me(), resource.data.authorId)
+            && activeConnection(me(), resource.data.authorId))
+      );
+      allow write: if false;
+    }
+
+    match /letters/{id} {
+      allow read: if signedIn() && me() in resource.data.participants;
+      allow write: if false;
+    }
+
+    match /connections/{cid} {
+      allow read: if signedIn() && me() in resource.data.members;
+      allow write: if false;
+
+      match /pages/{pid} {
+        allow read: if signedIn()
+          && me() in get(/databases/$(database)/documents/connections/$(cid)).data.members
+          && get(/databases/$(database)/documents/connections/$(cid)).data.status == 'active';
+        allow write: if false;
+      }
+    }
+
+    match /intros/{uid}/days/{day} {
+      allow read: if signedIn() && me() == uid;
+      allow write: if false;
+    }
+
+    match /blocks/{uid}/targets/{target} {
+      allow read: if signedIn() && me() == uid;
+      allow write: if false;
+    }
+
+    match /access/{id} { allow read, write: if false; }
+    match /introHistory/{uid} { allow read, write: if false; }
+    match /reports/{id} { allow read, write: if false; }
+  }
+}
