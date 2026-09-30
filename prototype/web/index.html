@@ -1,0 +1,517 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style></head><body>
+<title>つづり</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: a single phone-width column, header + scrolling page + bottom tabs, like the iOS app. */
+:root{
+  --paper:#f7f5f0; --card:#fffefb; --ink:#2b2a28; --sub:#6e6a61; --line:#e4dfd4;
+  --indigo:#3e5a73; --on-indigo:#ffffff; --kinmokusei:#c9791f; --mark:#f6e3c6; --danger:#9a4a3c;
+  --lock:#e4dfd4;
+  --serif:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --sans:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#1d1c1a; --card:#262522; --ink:#ece7dc; --sub:#a39d90; --line:#3a3833;
+  --indigo:#9db6cc; --on-indigo:#15212b; --kinmokusei:#e5a355; --mark:#4a3a24; --danger:#d98877; --lock:#3a3833; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d1c1a; --card:#262522; --ink:#ece7dc; --sub:#a39d90; --line:#3a3833;
+  --indigo:#9db6cc; --on-indigo:#15212b; --kinmokusei:#e5a355; --mark:#4a3a24; --danger:#d98877; --lock:#3a3833; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.7}
+#app{max-width:440px;height:100%;margin:0 auto;display:flex;flex-direction:column;border-inline:1px solid var(--line);background:var(--paper)}
+header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+header h1{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:.15em;margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{flex:1;overflow-y:auto;padding:16px 16px 32px}
+nav.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs button{background:none;border:0;padding:10px 0 12px;font:inherit;font-size:13px;color:var(--sub);cursor:pointer;position:relative}
+nav.tabs button[aria-current="page"]{color:var(--ink);font-weight:700}
+nav.tabs button[aria-current="page"]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--kinmokusei)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--kinmokusei);margin-left:4px;vertical-align:middle}
+h2{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:.06em;margin:4px 0 2px;text-wrap:balance}
+h3{font-size:15px;font-weight:700;margin:28px 0 10px;display:flex;gap:8px;align-items:baseline}
+h3 small{font-weight:400;color:var(--sub);font-variant-numeric:tabular-nums}
+.sub{color:var(--sub);font-size:13px}
+.prompt{color:var(--kinmokusei);font-size:13px}
+.diary{font-family:var(--serif);font-size:17px;line-height:1.85;letter-spacing:.02em}
+.stack{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:left;width:100%;font:inherit;color:inherit;cursor:pointer;display:block}
+.card:hover{border-color:var(--sub)}
+.row{display:flex;align-items:center;gap:10px;min-width:0}
+.row .grow{flex:1;min-width:0}
+.clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint{display:flex;gap:8px;margin:0;color:var(--sub);font-size:13px;line-height:1.6}
+.hint::before{content:"―";color:var(--kinmokusei)}
+.note{border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--sub);font-size:12.5px;margin-top:20px}
+.quote{background:var(--mark);border-left:3px solid var(--kinmokusei);padding:10px 12px;font-family:var(--serif);font-size:16px;line-height:1.8}
+.sentence{display:block;width:100%;text-align:left;background:none;border:0;padding:2px 6px;margin:0 -6px;border-radius:4px;font-family:var(--serif);font-size:17px;line-height:1.85;color:inherit;cursor:pointer}
+.sentence[aria-pressed="true"]{background:var(--mark)}
+.sentence:disabled{cursor:default}
+button.primary,button.ghost,button.danger{font:inherit;font-weight:700;border-radius:999px;padding:12px 18px;cursor:pointer;width:100%}
+button.primary{background:var(--indigo);color:var(--on-indigo);border:1px solid var(--indigo)}
+button.primary:disabled{opacity:.4;cursor:default}
+button.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+button.danger{background:none;color:var(--danger);border:1px solid var(--danger)}
+button.link{background:none;border:0;color:var(--indigo);font:inherit;font-size:14px;padding:6px 0;cursor:pointer;text-align:left}
+button.icon{background:none;border:0;color:var(--ink);font:inherit;font-size:20px;line-height:1;padding:4px 8px;cursor:pointer;border-radius:6px}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--kinmokusei);outline-offset:2px}
+textarea,input,select{width:100%;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+textarea{font-family:var(--serif);font-size:16px;line-height:1.8;resize:vertical}
+label.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--sub)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--mark);border-color:var(--kinmokusei)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{background:var(--card);border:0;border-left:1px solid var(--line);padding:8px 4px;font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--mark);font-weight:700}
+.photo{width:var(--s,52px);height:var(--s,52px);border-radius:calc(var(--s,52px)/8);flex:none;display:grid;place-items:center;font-family:var(--serif);color:#fff;font-size:calc(var(--s,52px)*.4)}
+.photo.locked{background:var(--lock);color:var(--sub);font-size:calc(var(--s,52px)*.3)}
+.page{padding:18px 0;border-bottom:1px solid var(--line)}
+.reply{margin:10px 0 0 16px;padding-left:12px;border-left:2px solid var(--line)}
+.menu{position:relative}
+.menu-list{position:absolute;right:0;top:34px;background:var(--card);border:1px solid var(--line);border-radius:10px;min-width:150px;z-index:5;padding:4px;display:flex;flex-direction:column}
+.menu-list button{background:none;border:0;text-align:left;padding:10px 12px;font:inherit;color:var(--ink);cursor:pointer;border-radius:6px}
+.menu-list button:hover{background:var(--mark)}
+.sheet-bg{position:fixed;inset:0;background:rgb(0 0 0 / .35);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sheet{background:var(--paper);width:100%;max-width:440px;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:90%;overflow-y:auto}
+.sheet h4{font-family:var(--serif);font-size:19px;margin:0}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-size:13.5px;z-index:20;max-width:min(400px,calc(100% - 32px))}
+.promise{display:grid;grid-template-columns:6px 1fr;gap:12px;align-items:start}
+.promise::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--kinmokusei);margin-top:9px}
+.hero{font-family:var(--serif);font-size:34px;letter-spacing:.3em;margin:20px 0 4px}
+@media (prefers-reduced-motion: no-preference){.card,.chip,.sentence{transition:background .15s,border-color .15s}}
+</style>
+
+<div id="app">
+  <header>
+    <button class="icon" id="back" aria-label="戻る" hidden>←</button>
+    <h1 id="title">つづり</h1>
+    <div id="head-actions" class="row"></div>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <nav class="tabs" id="tabs" hidden>
+    <button data-tab="read">読む</button>
+    <button data-tab="write">書く</button>
+    <button data-tab="together">ふたり<span class="dot" id="newdot" hidden></span></button>
+  </nav>
+</div>
+
+<script>
+"use strict";
+// ---------------------------------------------------------------- data
+const W="woman",M="man",N="nonbinary",U="unspecified";
+const GENDER={woman:"女性",man:"男性",nonbinary:"ノンバイナリー",unspecified:"回答しない"};
+const SCOPE={intro:"紹介に使う",connections:"つながった人だけ",private:"自分だけ"};
+const REPORT=["なりすまし","勧誘・営業","性的な内容","脅し・嫌がらせ","未成年の疑い","その他"];
+const LIMIT={intros:3,pending:3,conns:3,min:10,max:400};
+const DEMO_DELAY=6000;
+const PALETTE=[["#8fa6b8","#3e5a73"],["#e8b77a","#b0643a"],["#9bb39a","#4f6e55"],["#b9a6c9","#6a5680"],["#d8a7a0","#94574f"],["#a7c4c2","#4a7775"],["#e2c98f","#9a7a34"],["#b7b1a5","#625c52"]];
+const WRITERS=[
+ {id:"koharu",pen:"こはる",age:"20代後半",pref:"京都府",bio:"図書館で働いています。散歩と、知らない喫茶店のナポリタンが好き。",g:W,seek:[W,M],seed:1,
+  d:[[0,"帰り道、遠回りして金木犀を探した。見つける前に香りだけが先に届いて、少し得をした気分。","今日うれしかったこと"],[3,"返却された本に、しおり代わりのレシートが挟まっていた。三年前の、駅前のパン屋さん。持ち主はあのパンを覚えているだろうか。"],[9,"雨の日の図書館は静かで、ページをめくる音だけが大きい。こういう日のために働いている気がする。"]],
+  r:["読んでいて、同じ景色を見ていた気がしました。","その話、もう少し聞きたいです。ゆっくりで大丈夫です。","今日は早めに眠れそうです。おやすみなさい。"]},
+ {id:"akari",pen:"灯",age:"30代前半",pref:"東京都",bio:"照明の設計をしています。夜の街をよく歩きます。",g:W,seek:[W],seed:2,
+  d:[[1,"終電の少し前、ビルの窓がひとつずつ消えていくのを見ていた。誰かの一日が終わる音がする気がした。","休日に考えたこと"],[5,"新しい現場の下見。昼に見た階段が、夜の光で全然ちがう顔になる。この瞬間がいちばん好き。"],[12,"母から、庭の柿が今年は甘いと連絡。写真は少しぶれていたけど、声が明るかった。"]],
+  r:["光の話をすると、つい長くなってしまいます。","わたしもその感じ、わかる気がします。","今度、夜の散歩のおすすめの道を書きますね。"]},
+ {id:"minato",pen:"湊",age:"30代前半",pref:"神奈川県",bio:"港の近くで設計の仕事。週末はパンを焼きます。",g:M,seek:[W],seed:3,
+  d:[[0,"初めてバゲットがうまく割れた。クープが開いた瞬間、オーブンの前で小さく声が出た。","今日うれしかったこと"],[4,"朝の海は、夕方より少し青が薄い。コーヒーを持って、防波堤で十分だけ座るのが最近の習慣。"],[10,"同僚が辞めることになった。送別の言葉を考えているうちに、自分がどれだけ助けられていたかに気づく。"]],
+  r:["パンの話を聞いてもらえるのがうれしいです。","それ、すごくいいですね。今度まねしてみます。","今日は海が穏やかでした。"]},
+ {id:"yuzuru",pen:"ゆずる",age:"20代後半",pref:"大阪府",bio:"保育士。休みの日は銭湯めぐり。",g:M,seek:[M],seed:4,
+  d:[[1,"園の子に「せんせいの手、あったかい」と言われた。冬の前に言われると、ちょっと泣きそうになる。","今日うれしかったこと"],[6,"新しい銭湯を開拓。番台のおばあちゃんが、牛乳の瓶の開け方を教えてくれた。知ってたけど、黙って教わった。"],[11,"洗濯物がよく乾く日は、それだけで一日の点数が上がる。"]],
+  r:["読んで、思わず笑ってしまいました。","そういうの、大事ですよね。","また銭湯の話、書きます。"]},
+ {id:"nono",pen:"野の",age:"20代前半",pref:"北海道",bio:"大学院で植物の研究。雪の季節が近いです。",g:N,seek:[W,M,N],seed:5,
+  d:[[2,"温室のサボテンが、誰にも気づかれずに花を咲かせていた。記録簿に書くとき、なぜか小声になった。","今日うれしかったこと"],[7,"初雪の予報。まだ手袋を出していない。毎年、出すのを一日遅らせてしまう。"],[13,"論文が一行も進まない日。でも、帰り道の空の色だけは覚えている。"]],
+  r:["植物の話ばかりですみません。でも楽しいです。","その一文、何度も読み返しました。","今日は雪が降りませんでした。"]},
+ {id:"shizuku",pen:"しずく",age:"30代後半",pref:"福岡県",bio:"看護師。夜勤明けの朝ごはんが一番おいしい。",g:W,seek:[M],seed:6,
+  d:[[0,"夜勤明け、商店街のうどん屋さんが開くのを待って一杯。出汁の湯気で、やっと一日が終わる。"],[5,"患者さんに教わった折り鶴を、休憩室でひとつ折った。首のところが、どうしても曲がる。"],[8,"妹から、来月結婚式をすると連絡。スピーチはしないと決めていたのに、もう文章を考えている。","今日うれしかったこと"]],
+  r:["ゆっくり読ませてもらいました。","私もそういう朝、好きです。","お互い、無理せずいきましょう。"]},
+ {id:"saku",pen:"朔",age:"40代",pref:"長野県",bio:"木工をしています。山の近くで暮らしています。",g:M,seek:[W,M],seed:7,
+  d:[[1,"栗の木で小さな匙を削った。完成より、削っている時間のほうが好きなのかもしれない。"],[6,"朝、霧が谷に溜まっていた。工房の窓から見ると、町がまるごと雲の下にある。","休日に考えたこと"],[14,"注文をくれた人から、子どもが毎朝その椅子に座っていると手紙が来た。","今日うれしかったこと"]],
+  r:["ありがとうございます。よく眠れそうです。","手を動かしていると、考えがまとまります。","山は少し冷えてきました。"]},
+ {id:"chikage",pen:"千景",age:"20代後半",pref:"宮城県",bio:"出版社で校正の仕事。句読点に厳しいです。",g:W,seek:[W,N],seed:8,
+  d:[[0,"校正中の原稿に「きょうは、よいてんき。」という一文。句点を直すか迷って、そのままにした。"],[4,"閉店間際の古本屋で、祖母が持っていたのと同じ料理本を見つけた。買わずに、表紙だけ撫でてきた。","今日うれしかったこと"],[9,"牡蠣の季節が来る。今年こそ、殻を上手に開けられるようになりたい。"]],
+  r:["文章、とても好きです。","その話を読んで、祖母のことをまた思い出しました。","おやすみなさい。"]},
+ {id:"wataru",pen:"航",age:"30代後半",pref:"愛知県",bio:"整備士。休日は古い自転車を直しています。",g:M,seek:[M],seed:9,
+  d:[[2,"近所の子の自転車のチェーンを直した。お礼にもらったどんぐりが、まだポケットに入っている。","今日うれしかったこと"],[6,"雨上がり、工場の床に映る蛍光灯がきれいだった。誰にも言わずに写真を撮った。"],[12,"父の工具箱を久しぶりに開けた。レンチの持ち手が、父の手の形にすり減っていた。"]],
+  r:["どんぐり、まだ机に置いてあります。","読んで、少し元気が出ました。","今度、直した自転車の話を書きます。"]},
+ {id:"shiori",pen:"栞",age:"30代前半",pref:"広島県",bio:"市役所勤め。休日は島へ渡るのが好き。",g:W,seek:[M,W],seed:10,
+  d:[[1,"フェリーの二階、風がいちばん強い場所で、みかんを一つ食べた。皮の匂いが指に残って、帰りの電車まで島にいた。","休日に考えたこと"],[5,"窓口で、おじいさんに「ていねいにありがとう」と言われた。書類の説明しかしていないのに。","今日うれしかったこと"],[11,"新しい万年筆のインクが、思っていたより青かった。日記の文字まで少し若く見える。"]],
+  r:["島の話、また書きますね。","ていねいに読んでくださって、ありがとうございます。","今日は夕焼けがきれいでした。"]},
+];
+const PROMPTS=["今日うれしかったこと","休日に考えたこと","最近、少し笑ったこと","帰り道に見かけたもの","今週のごはんで、いちばんおいしかったもの","最近はじめたこと","だれかに言いそびれたこと"];
+const AGES=["20代前半","20代後半","30代前半","30代後半","40代","50代","60代以上"];
+const PREFS="北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県".split(" ");
+const byId=Object.fromEntries(WRITERS.map(w=>[w.id,w]));
+const DAY=864e5;
+const T0=Date.now();
+
+// ---------------------------------------------------------------- rules (mirrors lib/src/domain/rules.dart)
+const ALL=[W,M,N];
+const wants=(a,b)=>b.g===U?ALL.every(x=>a.seek.includes(x)):a.seek.includes(b.g);
+const mutual=(a,b)=>wants(a,b)&&wants(b,a);
+function half(s){return [...s].map(c=>{const r=c.codePointAt(0);if(r>=0xff01&&r<=0xff5e)return String.fromCodePoint(r-0xfee0);if(r===0x3000)return " ";if(r===0x2010||r===0x2212)return "-";return c}).join("")}
+function hasContact(text){
+  const t=half(text);
+  if(/[\w.+-]+@[\w-]+\.[\w.]+/.test(t)||/(https?:\/\/|www\.|\b[\w-]+\.(com|jp|net|org|me|io|co)\b)/i.test(t)||/@[a-z0-9_.]{3,}/i.test(t))return true;
+  if(/(instagram|インスタ|twitter|ツイッター|discord|ディスコード|kakao|カカオ|telegram|テレグラム|tiktok|ティックトック)/i.test(t))return true;
+  if(/(line|ライン|らいん)\s*(id|アイディ|交換|教え|追加|で話)/i.test(t))return true;
+  for(const m of t.matchAll(/\d[\d\s\-ー]{8,}\d/g)){if(m[0].replace(/\D/g,"").length>=10)return true}
+  return false;
+}
+function sentences(body){
+  const out=[];let buf="",depth=0;
+  for(const ch of body){
+    if(ch==="\n"){if(buf.trim())out.push(buf.trim());buf="";depth=0;continue}
+    buf+=ch;
+    if(ch==="「"||ch==="『")depth++;
+    if((ch==="」"||ch==="』")&&depth>0)depth--;
+    if(depth===0&&"。！？!?".includes(ch)){if(buf.trim())out.push(buf.trim());buf=""}
+  }
+  if(buf.trim())out.push(buf.trim());
+  return out;
+}
+function hash(s){let h=0x811c9dc5;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,0x01000193)>>>0}return h}
+function shuffle(arr,seed){let x=seed||1;const a=[...arr];for(let i=a.length-1;i>0;i--){x=(Math.imul(x,1103515245)+12345)>>>0;const j=x%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+const len=s=>[...s.trim()].length;
+
+// ---------------------------------------------------------------- state
+const S={me:null,diaries:[],letters:[],conns:[],pages:[],blocked:new Set(),reports:[],intro:null,stack:[{v:"tab",tab:"read"}],menu:false,seq:0,draft:{}};
+const id=p=>`${p}${++S.seq}`;
+const now=()=>Date.now();
+const writerDiaries=wid=>byId[wid].d.map((d,i)=>({id:`${wid}-d${i}`,author:wid,body:d[1],prompt:d[2]||null,at:T0-d[0]*DAY-3*36e5})).sort((a,b)=>b.at-a.at);
+const diary=did=>S.diaries.find(d=>d.id===did)||(()=>{const w=did.slice(0,did.lastIndexOf("-d"));return byId[w]?writerDiaries(w).find(d=>d.id===did):null})();
+const profile=pid=>pid==="me"?{pen:S.me.pen,age:S.me.age,pref:S.me.pref,bio:S.me.bio,seed:0,g:S.me.g,seek:S.me.seek}:byId[pid];
+const active=()=>S.conns.filter(c=>c.status==="active"&&!S.blocked.has(c.partner));
+const incoming=()=>S.letters.filter(l=>l.to==="me"&&l.status==="pending"&&!S.blocked.has(l.from));
+const outgoing=()=>S.letters.filter(l=>l.from==="me"&&l.status!=="accepted").sort((a,b)=>b.at-a.at);
+const pendingOut=()=>S.letters.filter(l=>l.from==="me"&&l.status==="pending").length;
+function relation(uid){
+  const c=S.conns.find(c=>c.partner===uid);
+  if(c)return{kind:c.status==="active"?"connected":"closed",c};
+  const l=[...S.letters].reverse().find(l=>(l.from==="me"&&l.to===uid)||(l.from===uid&&l.to==="me"));
+  if(!l)return{kind:"none"};
+  if(l.status!=="pending")return{kind:"closed",l};
+  return{kind:l.from==="me"?"sent":"received",l};
+}
+function intros(){
+  if(!S.me||S.me.paused)return[];
+  if(!S.intro){
+    const excluded=new Set([...S.blocked,...S.conns.map(c=>c.partner),...S.letters.map(l=>l.from==="me"?l.to:l.from)]);
+    const eligible=WRITERS.filter(w=>!excluded.has(w.id)&&mutual(S.me,w)).map(w=>w.id).sort();
+    S.intro=shuffle(eligible,hash(new Date().toDateString()+"/me")).slice(0,LIMIT.intros);
+  }
+  return S.intro.filter(x=>!S.blocked.has(x)).map(x=>byId[x]);
+}
+function connect(partner){
+  const c={id:id("c"),partner,at:now(),status:"active",photo:"hidden",by:null,byAt:0};
+  S.conns.push(c);
+  S.pages.push({id:id("p"),conn:c.id,author:partner,body:`つながってくれて、ありがとうございます。${byId[partner].pen}です。急がず、思い出したときに書いていきましょう。`,at:now(),replies:[]});
+  return c;
+}
+function tick(){
+  if(!S.me)return;
+  let changed=false;const t=now();
+  for(const l of S.letters){
+    if(l.status==="pending"&&l.from==="me"&&t-l.at>=DEMO_DELAY&&!S.blocked.has(l.to)&&active().length<LIMIT.conns){l.status="accepted";connect(l.to);changed=true}
+  }
+  for(const c of active()){
+    if(c.photo==="proposed"&&c.by==="me"&&t-c.byAt>=DEMO_DELAY){c.photo="revealed";changed=true}
+    const ps=S.pages.filter(p=>p.conn===c.id);const last=ps[ps.length-1];
+    if(last&&last.author==="me"&&!last.replies.some(r=>r.author===c.partner)&&t-last.at>=DEMO_DELAY){
+      const used=ps.reduce((n,p)=>n+p.replies.filter(r=>r.author===c.partner).length,0);
+      const w=byId[c.partner];last.replies.push({author:c.partner,body:w.r[used%w.r.length],at:t});changed=true;
+    }
+  }
+  if(changed)render();
+}
+setInterval(tick,1000);
+
+// ---------------------------------------------------------------- helpers
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dateLabel=t=>{const d=new Date(t);return `${d.getMonth()+1}月${d.getDate()}日`};
+const line=p=>`${esc(p.age)}・${esc(p.pref)}`;
+const hint=t=>`<p class="hint">${t}</p>`;
+function photo(p,shown,size=52){
+  const [a,b]=PALETTE[p.seed%PALETTE.length];
+  return shown?`<span class="photo" style="--s:${size}px;background:linear-gradient(135deg,${a},${b})">${esc([...p.pen][0])}</span>`
+              :`<span class="photo locked" style="--s:${size}px" aria-label="写真はまだ見えません">🔒︎</span>`;
+}
+let toastTimer;
+function toast(msg){document.querySelectorAll(".toast").forEach(e=>e.remove());const el=document.createElement("div");el.className="toast";el.setAttribute("role","status");el.textContent=msg;document.body.append(el);clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.remove(),3200)}
+const cur=()=>S.stack[S.stack.length-1];
+function go(v){S.menu=false;S.stack.push(v);render(true)}
+function back(){S.menu=false;if(S.stack.length>1)S.stack.pop();render(true)}
+function home(tab){S.menu=false;S.stack=[{v:"tab",tab:tab||cur().tab||S.stack[0].tab}];render(true)}
+function sheet(html,onMount){
+  const bg=document.createElement("div");bg.className="sheet-bg";
+  bg.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  bg.addEventListener("click",e=>{if(e.target===bg)bg.remove()});
+  document.body.append(bg);onMount&&onMount(bg.firstElementChild,()=>bg.remove());
+  bg.querySelector("button,textarea")?.focus();
+}
+function ask(title,msg,action,danger,ok){
+  sheet(`<h4>${esc(title)}</h4><p class="sub">${esc(msg)}</p><button class="${danger?"danger":"primary"}" data-ok>${esc(action)}</button><button class="ghost" data-no>やめておく</button>`,
+    (el,close)=>{el.querySelector("[data-ok]").onclick=()=>{close();ok()};el.querySelector("[data-no]").onclick=close});
+}
+
+// ---------------------------------------------------------------- screens
+const screens={
+  onboarding(){
+    const d=S.draft;d.step??=0;d.seek??=[];
+    const steps=[
+      ()=>`<div class="hero">つづり</div><p class="diary" style="margin:0">好きになるのは、その人の毎日。</p>
+        <p style="margin:20px 0">日々の小さな出来事を書いた日記から、人柄を知る場所です。友達になり、ふたりが望めば、その先に恋愛もあります。</p>
+        <div class="stack">${[["返信を急かしません","既読表示も、返信の期限もありません。"],["人気を競いません","いいねの数やランキングはありません。"],["一人ずつ向き合います","紹介は1日3人、つながりは同時に3人までです。"],["無理なく続けられます","毎日書く義務も、休んだときの罰もありません。"],["安心して離れられます","理由なしで見送り・関係の終了・ブロックができます。"]]
+          .map(([a,b])=>`<div class="promise"><div><b>${a}</b><div class="sub">${b}</div></div></div>`).join("")}</div>
+        <p class="note">試作版：登場する書き手はすべて架空の人物です。入力した内容はこのページを閉じると消えます。</p>
+        <label class="row" style="margin-top:12px;cursor:pointer"><input type="checkbox" id="adult" style="width:auto" ${d.adult?"checked":""}> <span>18歳以上です<br><span class="sub">公開版では、公的書類による年齢確認を行います。</span></span></label>`,
+      ()=>`<h2>あなたのことを少しだけ</h2>${hint("本名や顔写真は、ここでは使いません。連絡先やSNSのIDは書けません。")}
+        <div class="stack" style="margin-top:16px">
+        <label class="field">ペンネーム<input id="pen" maxlength="16" value="${esc(d.pen||"")}" placeholder="例：ひより"></label>
+        <label class="field">年代<select id="age">${AGES.map(a=>`<option ${a===(d.age||"30代前半")?"selected":""}>${a}</option>`).join("")}</select></label>
+        <label class="field">住んでいる地域<select id="pref">${PREFS.map(p=>`<option ${p===(d.pref||"東京都")?"selected":""}>${p}</option>`).join("")}</select></label>
+        <label class="field">ひとこと（任意）<input id="bio" maxlength="120" value="${esc(d.bio||"")}" placeholder="例：散歩と喫茶店が好きです"></label></div>`,
+      ()=>`<h2>どんな人と出会いたいですか</h2>${hint("ここで選んだことは、ほかの人には表示されません。お互いの希望が合う人だけが紹介されます。")}
+        <h3>あなたの性別</h3><div class="chips">${[W,M,N,U].map(g=>`<button class="chip" data-g="${g}" aria-pressed="${d.g===g}">${GENDER[g]}</button>`).join("")}</div>
+        <h3>出会いたい相手（いくつでも）</h3><div class="chips">${ALL.map(g=>`<button class="chip" data-seek="${g}" aria-pressed="${d.seek.includes(g)}">${GENDER[g]}</button>`).join("")}</div>
+        ${d.g===U?`<div style="margin-top:14px">${hint("「回答しない」を選んだ場合、出会いたい相手にすべての性別を選んでいる人とだけ紹介し合います。")}</div>`:""}`,
+      ()=>`<h2>最初の日記</h2>${hint("一行で大丈夫です。この日記が、あなたを紹介する最初のページになります。")}
+        <p class="prompt" style="margin:16px 0 6px">今日うれしかったこと</p><textarea id="first" rows="6" maxlength="2000" placeholder="例：帰り道、遠回りして金木犀を探した。">${esc(d.first||"")}</textarea>`,
+    ];
+    const ok=[d.adult,(d.pen||"").trim(),d.g&&d.seek.length,(d.first||"").trim()][d.step];
+    return {title:`はじめに ${d.step+1} / 4`,back:d.step>0,body:steps[d.step]()+`<div style="margin-top:28px"><button class="primary" data-act="ob-next" ${ok?"":"disabled"}>${d.step===3?"はじめる":"次へ"}</button></div>`};
+  },
+  read(){
+    const list=intros();
+    let body=`<h2>今日の日記</h2><p class="sub">明日の朝5時に、また届きます。</p><div class="stack" style="margin-top:14px">`;
+    if(S.me.paused)body+=hint("お休み中です。紹介は届きません。設定からいつでも再開できます。");
+    else if(!list.length)body+=hint("今日紹介できる人はいません。自分の日記を書いたり、ふたりの日記を読み返したりして過ごしましょう。");
+    for(const w of list){
+      const ds=writerDiaries(w.id),d=ds[0],rel=relation(w.id).kind;
+      body+=`<button class="card" data-act="writer" data-id="${w.id}"><div class="row"><b>${esc(w.pen)}</b><span class="sub grow">${line(w)}</span>${rel==="sent"?`<span class="sub">感想を送りました</span>`:""}</div>
+        ${d.prompt?`<div class="prompt" style="margin-top:8px">${esc(d.prompt)}</div>`:`<div style="height:8px"></div>`}<div class="diary clip">${esc(d.body)}</div>
+        <div class="sub" style="margin-top:6px">${dateLabel(d.at)}・ほかに${ds.length-1}日分の日記</div></button>`;
+    }
+    return {title:"つづり",body:body+`</div><p class="note">試作版：登場する書き手はすべて架空の人物です。</p>`};
+  },
+  write(){
+    const d=S.draft;d.scope??="intro";d.usePrompt??=true;
+    const prompt=PROMPTS[hash(new Date().toDateString())%PROMPTS.length];
+    const mine=[...S.diaries].sort((a,b)=>b.at-a.at);
+    return {title:"つづり",body:`<h2>今日のこと</h2><p class="sub">一行でも大丈夫。毎日書かなくても大丈夫。</p>
+      <div class="row" style="margin-top:12px"><span class="grow ${d.usePrompt?"prompt":"sub"}">${d.usePrompt?"問いかけ："+esc(prompt):"問いかけなし"}</span><button class="link" data-act="toggle-prompt">${d.usePrompt?"使わない":"使う"}</button></div>
+      <textarea id="entry" rows="7" maxlength="2000" placeholder="今日、少し心が動いたことを。">${esc(d.entry||"")}</textarea>
+      <p class="sub" style="margin:12px 0 6px">だれに見せるか</p>
+      <div class="seg">${Object.entries(SCOPE).map(([k,v])=>`<button data-scope="${k}" aria-pressed="${d.scope===k}">${v}</button>`).join("")}</div>
+      <div style="margin:10px 0 16px">${hint({intro:"あなたを紹介するときに、この日記が読まれます。",connections:"つながった人だけが読めます。",private:"あなただけの日記です。だれにも表示されません。"}[d.scope])}</div>
+      <button class="primary" data-act="write" data-prompt="${esc(prompt)}" ${(d.entry||"").trim()?"":"disabled"}>書く</button>
+      ${mine.length?`<h3>これまでの日記</h3>`:""}${mine.map(x=>`<div class="page"><div class="sub">${dateLabel(x.at)}　${SCOPE[x.scope]}</div>${x.prompt?`<div class="prompt">${esc(x.prompt)}</div>`:""}<div class="diary">${esc(x.body)}</div></div>`).join("")}`};
+  },
+  together(){
+    const inc=incoming(),cs=active(),out=outgoing();
+    let b=`<h2>ふたり</h2><p class="sub">既読の表示や、返信の期限はありません。</p>`;
+    if(inc.length)b+=`<h3>届いた感想</h3><div class="stack">${inc.map(l=>`<button class="card" data-act="letter" data-id="${l.id}"><b>${esc(byId[l.from].pen)}さんから</b><div class="quote" style="margin:8px 0">${esc(l.quote)}</div><div class="clip">${esc(l.body)}</div></button>`).join("")}</div>`;
+    b+=`<h3>つながり <small>${cs.length} / ${LIMIT.conns}</small></h3>`;
+    b+=cs.length?`<div class="stack">${cs.map(c=>{const ps=S.pages.filter(p=>p.conn===c.id),last=ps[ps.length-1],lr=last&&(last.replies[last.replies.length-1]||last);const w=byId[c.partner];
+        return `<button class="card" data-act="conn" data-id="${c.id}"><div class="row">${photo(w,c.photo==="revealed")}<div class="grow"><b>${esc(w.pen)}</b>${lr&&lr.author!=="me"?`<span class="dot" aria-label="新しいページ"></span>`:""}<div class="sub one">${lr?esc(lr.body):""}</div></div></div></button>`}).join("")}</div>`
+      :hint("まだだれともつながっていません。日記を読んで、心に残った一文に感想を送ってみましょう。");
+    if(out.length)b+=`<h3>送った感想</h3><div class="stack">${out.map(l=>`<div><div>${esc(byId[l.to].pen)}さんへ・${dateLabel(l.at)}</div><div class="sub">${l.status==="pending"?"返事を待っています。急がなくて大丈夫です。":"そっと閉じました。"}</div></div>`).join("")}</div>`;
+    return {title:"つづり",body:b+`<p class="note">試作版：架空の書き手は、約${DEMO_DELAY/1000}秒後に「話したい」と返し、ふたりの日記や写真の提案にも返事をします。</p>`};
+  },
+  writer(v){
+    const w=byId[v.id];if(!w||S.blocked.has(v.id)){return {title:"",back:true,body:hint("この人の日記は読めません。")}}
+    const rel=relation(w.id).kind,can=rel==="none";
+    const relText={none:"写真はまだ見えません。文章から、この人の毎日を読んでみてください。",sent:"感想を届けました。返事はゆっくり待ちましょう。",received:"この人から感想が届いています。「ふたり」から返事ができます。",connected:"つながっています。「ふたり」で、ふたりの日記を書けます。",closed:"この人とのやりとりは閉じています。"}[rel];
+    let b=`<p class="sub">${line(w)}</p><p style="margin:4px 0 12px">${esc(w.bio)}</p>${hint(relText)}`;
+    for(const d of writerDiaries(w.id)){
+      b+=`<div style="margin-top:22px"><div class="row"><span class="sub">${dateLabel(d.at)}</span>${d.prompt?`<span class="prompt">${esc(d.prompt)}</span>`:""}</div>`+
+        sentences(d.body).map(s=>`<button class="sentence" data-act="pick" data-d="${d.id}" data-s="${esc(s)}" aria-pressed="${v.d===d.id&&v.s===s}" ${can?"":"disabled"}>${esc(s)}</button>`).join("")+`</div>`;
+    }
+    if(can)b+=`<div style="position:sticky;bottom:-32px;background:var(--paper);padding:12px 0 16px;margin-top:20px">${v.s?"":`<p class="sub" style="text-align:center;margin:0 0 6px">心に残った一文をタップしてください</p>`}<button class="primary" data-act="compose" ${v.s?"":"disabled"}>この一文に感想を書く</button></div>`;
+    return {title:w.pen,back:true,safety:{target:w.id,where:"diary"},body:b};
+  },
+  compose(v){
+    const d=diary(v.d),w=byId[d.author],n=len(v.text||"");
+    return {title:`${w.pen}さんへの感想`,back:true,body:`<div class="quote">${esc(v.s)}</div>
+      <textarea id="letter" rows="6" maxlength="${LIMIT.max}" style="margin-top:16px" placeholder="例：私も秋は遠回りしたくなります。">${esc(v.text||"")}</textarea>
+      <div class="stack" style="margin:10px 0 20px">${hint("つながる前に、連絡先やSNSのIDは送れません。")}${hint("返事がなくても、催促はできません。相手のペースを大切にしましょう。")}</div>
+      <button class="primary" data-act="send" ${n<LIMIT.min?"disabled":""}>感想を届ける</button>
+      <p class="sub" style="text-align:center" id="remain">${n>0&&n<LIMIT.min?`あと${LIMIT.min-n}文字`:""}</p>`};
+  },
+  letter(v){
+    const l=incoming().find(x=>x.id===v.id);if(!l)return {title:"",back:true,body:hint("この感想には、もう返事ができません。")};
+    const w=byId[l.from];
+    return {title:`${w.pen}さんから`,back:true,safety:{target:w.id,where:"letter"},body:`<p class="sub">${line(w)}</p>
+      <p class="sub" style="margin:18px 0 6px">あなたの日記から</p><div class="quote">${esc(l.quote)}</div>
+      <p class="diary" style="margin:16px 0">${esc(l.body)}</p>
+      <button class="link" data-act="writer" data-id="${w.id}">${esc(w.pen)}さんの日記を読む →</button>
+      <div style="margin:16px 0 20px">${hint("「話したい」と返すと、ふたりがつながり、ふたりの日記が始まります。写真はまだ公開されません。")}</div>
+      <div class="stack"><button class="primary" data-act="accept" data-id="${l.id}">話したい</button><button class="ghost" data-act="decline" data-id="${l.id}">見送る</button></div>`};
+  },
+  conn(v){
+    const c=S.conns.find(x=>x.id===v.id);
+    if(!c||c.status!=="active"||S.blocked.has(c.partner))return {title:"",back:true,body:hint("この関係は終わりました。ふたりの日記は読めなくなっています。")};
+    const w=byId[c.partner],shown=c.photo==="revealed",me=profile("me");
+    const status={hidden:"写真はまだ見えません。見せ合うかどうかは、ふたりで決められます。",proposed:c.by==="me"?"写真を見せ合う提案をしています。相手の返事を待っています。":"写真を見せ合う提案が届いています。",revealed:"ふたりの写真を、同時に公開しました。"}[c.photo];
+    const ps=S.pages.filter(p=>p.conn===c.id);
+    return {title:`${w.pen}さんとの日記`,back:true,safety:{target:w.id,where:"page",conn:c.id},body:`${hint("つながることは、交際への同意ではありません。いつでも理由なしで離れられます。")}
+      <button class="card" data-act="photo" data-id="${c.id}" style="margin-top:14px"><div class="row">${photo(w,shown,44)}${photo(me,shown,44)}<span class="sub grow">${status}</span><span aria-hidden="true">›</span></div></button>
+      <button class="link" data-act="writer" data-id="${w.id}" style="margin-top:6px">${esc(w.pen)}さんの日記を読む →</button>
+      ${ps.map(p=>`<div class="page"><div class="sub">${esc(p.author==="me"?S.me.pen:w.pen)}・${dateLabel(p.at)}</div><div class="diary">${esc(p.body)}</div>
+        ${p.replies.map(r=>`<div class="reply"><div class="sub">${esc(r.author==="me"?S.me.pen:w.pen)}の返事</div><div>${esc(r.body)}</div></div>`).join("")}
+        <button class="link" data-act="reply" data-id="${p.id}">返事を添える</button></div>`).join("")}
+      <textarea id="pagebody" rows="3" maxlength="2000" style="margin-top:18px" placeholder="ふたりの日記に書く">${esc(v.text||"")}</textarea>
+      <div style="margin-top:8px"><button class="primary" data-act="page" data-id="${c.id}" ${(v.text||"").trim()?"":"disabled"}>書き足す</button></div>`};
+  },
+  photo(v){
+    const c=S.conns.find(x=>x.id===v.id);if(!c||c.status!=="active")return {title:"",back:true,body:hint("この関係は終わっています。")};
+    const w=byId[c.partner],shown=c.photo==="revealed",me=profile("me");
+    let b=`<div class="row" style="justify-content:center;gap:20px;margin:8px 0"><div style="text-align:center">${photo(w,shown,120)}<div class="sub">${esc(w.pen)}</div></div><div style="text-align:center">${photo(me,shown,120)}<div class="sub">あなた</div></div></div>`;
+    if(shown)b+=`<p class="sub" style="text-align:center">試作版では、写真の代わりに色の画像を表示しています。</p>`;
+    else b+=`<div class="stack" style="margin:20px 0">${hint("ふたりが同意した時点で、お互いの写真が同時に公開されます。")}${hint("公開した後に関係を終えても、相手がすでに見たことは取り消せません。")}${hint("同意しないことは失礼ではありません。理由を伝える必要もありません。")}</div>`;
+    if(c.photo==="hidden")b+=`<button class="primary" data-act="propose" data-id="${c.id}">写真を見せ合いませんか、と提案する</button>`;
+    if(c.photo==="proposed"&&c.by==="me")b+=`${hint("相手の返事を待っています。相手が同意する前なら、提案を取り消せます。")}<div style="margin-top:12px"><button class="ghost" data-act="cancel-photo" data-id="${c.id}">提案を取り消す</button></div>`;
+    return {title:"写真を見せ合う",back:true,body:b};
+  },
+  settings(){
+    const m=S.me;
+    return {title:"設定",back:true,body:`<h2>${esc(m.pen)}</h2><p class="sub">${esc(m.age)}・${esc(m.pref)}</p>
+      <h3>出会いたい相手</h3><p class="sub">あなたの性別：${GENDER[m.g]}（ほかの人には表示されません）</p>
+      <div class="chips">${ALL.map(g=>`<button class="chip" data-act="set-seek" data-g="${g}" aria-pressed="${m.seek.includes(g)}">${GENDER[g]}</button>`).join("")}</div>
+      <h3>お休み</h3><label class="row" style="cursor:pointer"><input type="checkbox" id="pause" style="width:auto" ${m.paused?"checked":""}><span>お休みモード<br><span class="sub">紹介を止めて、あなたの日記もだれにも紹介されなくなります。つながりはそのまま続きます。</span></span></label>
+      <h3>ブロックした人</h3>${S.blocked.size?[...S.blocked].map(x=>`<div class="row"><span class="grow">${esc(byId[x].pen)}</span><button class="link" data-act="unblock" data-id="${x}">解除</button></div>`).join(""):`<p class="sub">いません。</p>`}
+      <h3>データ</h3><button class="danger" data-act="wipe">最初からやり直す</button>`};
+  },
+};
+
+// ---------------------------------------------------------------- render
+function render(scrollTop){
+  const v=cur();
+  const main=$("#main"),keepScroll=main.scrollTop;
+  let out;
+  if(!S.me)out=screens.onboarding();
+  else if(v.v==="tab")out=screens[v.tab]();
+  else out=screens[v.v](v);
+  $("#title").textContent=out.title;
+  $("#back").hidden=!out.back;
+  const ha=$("#head-actions");ha.innerHTML="";
+  if(S.me&&v.v==="tab")ha.innerHTML=`<button class="icon" data-act="settings" aria-label="設定">⚙︎</button>`;
+  if(out.safety){
+    ha.innerHTML=`<div class="menu"><button class="icon" data-act="menu" aria-label="安全のためのメニュー" aria-expanded="${S.menu}">⋯</button>${S.menu?`<div class="menu-list">${out.safety.conn?`<button data-act="end" data-id="${out.safety.conn}">関係を終える</button>`:""}<button data-act="block" data-id="${out.safety.target}">ブロック</button><button data-act="report" data-id="${out.safety.target}" data-where="${out.safety.where}">通報</button></div>`:""}</div>`;
+  }
+  const focused=document.activeElement&&document.activeElement.id,sel=focused&&[document.activeElement.selectionStart,document.activeElement.selectionEnd];
+  main.innerHTML=out.body;
+  main.scrollTop=scrollTop?0:keepScroll;
+  if(focused){const el=document.getElementById(focused);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch(_){}}}
+  const tabs=$("#tabs");tabs.hidden=!S.me;
+  tabs.querySelectorAll("button").forEach(b=>b.setAttribute("aria-current",v.v==="tab"&&b.dataset.tab===v.tab?"page":"false"));
+  $("#newdot").hidden=!(S.me&&incoming().length);
+}
+
+// ---------------------------------------------------------------- actions
+function finishOnboarding(){
+  const d=S.draft;
+  const name=d.pen.trim();
+  if(hasContact(name)||hasContact(d.bio||""))return toast("プロフィールに連絡先やSNSのIDは書けません。");
+  S.me={pen:name,age:d.age||"30代前半",pref:d.pref||"東京都",bio:(d.bio||"").trim(),g:d.g,seek:[...d.seek],paused:false,seed:0};
+  const first={id:id("d"),author:"me",body:d.first.trim(),scope:"intro",prompt:"今日うれしかったこと",at:now()};
+  S.diaries.push(first);
+  const w=WRITERS.find(w=>mutual(S.me,w));
+  if(w){const q=sentences(first.body)[0];S.letters.push({id:id("l"),from:w.id,to:"me",diary:first.id,quote:q,body:`「${q}」という一文が、今日の自分にも少し重なりました。よかったら、もう少しお話を聞かせてください。`,status:"pending",at:now()})}
+  S.draft={};home("read");
+}
+function closeAll(uid){
+  for(const c of S.conns)if(c.partner===uid&&c.status==="active")c.status="ended";
+  for(const l of S.letters)if((l.from===uid||l.to===uid)&&l.status==="pending")l.status="closed";
+}
+const act={
+  "ob-next"(){const d=S.draft;if(d.step<3){d.step++;render(true)}else finishOnboarding()},
+  writer(e){go({v:"writer",id:e.dataset.id})},
+  pick(e){const v=cur();const same=v.d===e.dataset.d&&v.s===e.dataset.s;v.d=same?null:e.dataset.d;v.s=same?null:e.dataset.s;render()},
+  compose(){const v=cur();go({v:"compose",d:v.d,s:v.s,text:""})},
+  send(){
+    const v=cur(),d=diary(v.d),body=(v.text||"").trim();
+    if(relation(d.author).kind!=="none")return toast("この人とは、すでにやりとりがあります。");
+    if(pendingOut()>=LIMIT.pending)return toast(`返事を待っている感想が${LIMIT.pending}通あります。ひとつ落ち着いてから、また送れます。`);
+    if(active().length>=LIMIT.conns)return toast(`いまは${LIMIT.conns}人とつながっています。今のつながりを大切にする期間です。`);
+    if(len(body)<LIMIT.min)return toast(`感想は${LIMIT.min}文字以上で書いてください。`);
+    if(hasContact(body))return toast("つながる前の連絡先の交換は控えてください。電話番号・メールアドレス・URL・SNSのIDを消してから送れます。");
+    S.letters.push({id:id("l"),from:"me",to:d.author,diary:d.id,quote:v.s,body,status:"pending",at:now()});
+    home("read");toast("届けました。返事はゆっくり待ちましょう。");
+  },
+  letter(e){go({v:"letter",id:e.dataset.id})},
+  accept(e){
+    const l=S.letters.find(x=>x.id===e.dataset.id);
+    if(active().length>=LIMIT.conns)return toast(`つながりは同時に${LIMIT.conns}人までです。`);
+    l.status="accepted";const c=connect(l.from);
+    sheet(`<h4>つながりました</h4><p>つながることは、交際への同意ではありません。ふたりの日記で、ゆっくり知り合っていきましょう。いつでも理由なしで関係を終えられます。</p><button class="primary" data-ok>わかりました</button>`,
+      (el,close)=>{el.querySelector("[data-ok]").onclick=()=>{close();S.stack.pop();go({v:"conn",id:c.id,text:""})}});
+  },
+  decline(e){ask("見送りますか","相手には通知されません。理由を伝える必要もありません。","見送る",false,()=>{S.letters.find(x=>x.id===e.dataset.id).status="declined";back()})},
+  conn(e){go({v:"conn",id:e.dataset.id,text:""})},
+  page(e){const v=cur();S.pages.push({id:id("p"),conn:e.dataset.id,author:"me",body:v.text.trim(),at:now(),replies:[]});v.text="";render()},
+  reply(e){
+    const p=S.pages.find(x=>x.id===e.dataset.id);
+    sheet(`<div class="quote">${esc(p.body)}</div><textarea id="replybody" rows="3" maxlength="2000" placeholder="返事を添える"></textarea><button class="primary" data-ok disabled>添える</button>`,
+      (el,close)=>{const t=el.querySelector("textarea"),b=el.querySelector("[data-ok]");t.oninput=()=>b.disabled=!t.value.trim();b.onclick=()=>{p.replies.push({author:"me",body:t.value.trim(),at:now()});close();render()}});
+  },
+  photo(e){go({v:"photo",id:e.dataset.id})},
+  propose(e){const c=S.conns.find(x=>x.id===e.dataset.id);c.photo="proposed";c.by="me";c.byAt=now();render()},
+  "cancel-photo"(e){const c=S.conns.find(x=>x.id===e.dataset.id);c.photo="hidden";c.by=null;render()},
+  menu(){S.menu=!S.menu;render()},
+  end(e){S.menu=false;render();ask("関係を終えますか","理由を伝える必要はありません。相手には「この関係は終わりました」とだけ表示され、ふたりの日記は読めなくなります。もう一度つながることはできません。","関係を終える",true,()=>{S.conns.find(x=>x.id===e.dataset.id).status="ended";home("together")})},
+  block(e){S.menu=false;render();ask("ブロックしますか","相手には通知されません。お互いに紹介されなくなり、つながりや感想も閉じます。","ブロックする",true,()=>{S.blocked.add(e.dataset.id);closeAll(e.dataset.id);home();toast("ブロックしました。")})},
+  report(e){
+    S.menu=false;render();const target=e.dataset.id,where=e.dataset.where;let cat=null;
+    sheet(`<h4>通報</h4>${hint("運営が内容を確認します。通報すると、この人は自動的にブロックされます。相手に通報したことは伝わりません。")}
+      <div class="chips">${REPORT.map((r,i)=>`<button class="chip" data-c="${i}" aria-pressed="false">${r}</button>`).join("")}</div>
+      <textarea rows="3" maxlength="1000" placeholder="状況の説明（任意）"></textarea><button class="primary" data-ok disabled>通報する</button><button class="ghost" data-no>やめておく</button>`,
+      (el,close)=>{el.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{cat=+b.dataset.c;el.querySelectorAll("[data-c]").forEach(x=>x.setAttribute("aria-pressed",x===b));el.querySelector("[data-ok]").disabled=false});
+        el.querySelector("[data-no]").onclick=close;
+        el.querySelector("[data-ok]").onclick=()=>{S.reports.push({target,where,category:REPORT[cat],note:el.querySelector("textarea").value.trim(),at:now()});S.blocked.add(target);closeAll(target);close();home();toast("通報を受け付けました。この人はブロックされました。")}});
+  },
+  settings(){go({v:"settings"})},
+  "set-seek"(e){const s=new Set(S.me.seek);s.has(e.dataset.g)?s.delete(e.dataset.g):s.add(e.dataset.g);if(!s.size)return toast("出会いたい相手を1つ以上選んでください。");S.me.seek=[...s];S.intro=null;render()},
+  unblock(e){S.blocked.delete(e.dataset.id);render()},
+  wipe(){ask("最初からやり直しますか","日記、感想、ふたりの日記、設定が消えます。","やり直す",true,()=>{Object.assign(S,{me:null,diaries:[],letters:[],conns:[],pages:[],blocked:new Set(),reports:[],intro:null,stack:[{v:"tab",tab:"read"}],draft:{}});render(true)})},
+  "toggle-prompt"(){S.draft.usePrompt=!S.draft.usePrompt;render()},
+  write(e){
+    const d=S.draft;S.diaries.push({id:id("d"),author:"me",body:d.entry.trim(),scope:d.scope,prompt:d.usePrompt?e.dataset.prompt:null,at:now()});
+    d.entry="";document.activeElement?.blur();render();toast("書きました。");
+  },
+};
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-act],[data-tab],[data-g],[data-seek],[data-scope],#back");if(!t)return;
+  if(t.id==="back"){if(!S.me){S.draft.step--;render(true)}else back();return}
+  if(t.dataset.tab){home(t.dataset.tab);return}
+  if(t.dataset.act){act[t.dataset.act](t);return}
+  if(t.dataset.g&&!S.me){S.draft.g=t.dataset.g;render();return}
+  if(t.dataset.seek){const s=new Set(S.draft.seek);s.has(t.dataset.seek)?s.delete(t.dataset.seek):s.add(t.dataset.seek);S.draft.seek=[...s];render();return}
+  if(t.dataset.scope){S.draft.scope=t.dataset.scope;render();return}
+});
+document.addEventListener("input",e=>{
+  const t=e.target,d=S.draft,v=cur();
+  const map={pen:"pen",bio:"bio",first:"first",entry:"entry"};
+  if(map[t.id]){d[map[t.id]]=t.value;
+    const btn=document.querySelector('[data-act="ob-next"],[data-act="write"]');
+    if(btn){if(t.id==="entry")btn.disabled=!t.value.trim();else if(t.id==="pen")btn.disabled=!t.value.trim();else if(t.id==="first")btn.disabled=!t.value.trim()}
+  }
+  if(t.id==="letter"){v.text=t.value;const n=len(t.value);$('[data-act="send"]').disabled=n<LIMIT.min;$("#remain").textContent=n>0&&n<LIMIT.min?`あと${LIMIT.min-n}文字`:""}
+  if(t.id==="pagebody"){v.text=t.value;$('[data-act="page"]').disabled=!t.value.trim()}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="adult"){S.draft.adult=t.checked;render()}
+  if(t.id==="age")S.draft.age=t.value;
+  if(t.id==="pref")S.draft.pref=t.value;
+  if(t.id==="pause"){S.me.paused=t.checked;render()}
+});
+render();
+</script>
+</body></html>

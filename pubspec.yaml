@@ -1,0 +1,16 @@
+name: tsuzuri
+description: つづり — diary-first friendship and dating app (App Factory product; unvalidated hypothesis).
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  app_core:
+    path: ../../packages/app_core
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true

@@ -1,0 +1,16 @@
+{
+  "product_id": "tsuzuri",
+  "title": "つづり v0: 端末内デモの試作（読む・書く・ふたり・写真の同時公開）",
+  "kind": "feature",
+  "priority": 1,
+  "body": "設計: services/tsuzuri/docs/DESIGN.md。Flutter の端末内デモ（DemoBackend）を実装済みだが、analyze/test は未実行。作成環境で Flutter SDK と pub.dev に接続できなかったため。",
+  "acceptance": [
+    "ops.py bootstrap-mobile tsuzuri --org com.koseirving で ios/ が生成されている",
+    "flutter analyze が指摘なしで通る（実行結果を証跡に添付）",
+    "flutter test の rules_test / demo_backend_test / app_test が全件通る（実行結果を証跡に添付）",
+    "iOS シミュレーターで、はじめに→読む→一文を選んで感想→つながる→ふたりの日記→写真の同時公開→関係を終える、が一周できる",
+    "既読表示・いいね数・ランキング・連続投稿の報酬が画面に存在しない",
+    "実機での確認は未検証と記録し、合格扱いにしない"
+  ],
+  "next_action": "Mac で pub get → analyze → test を実行し、失敗があれば再現テストを追加して修正する。"
+}
